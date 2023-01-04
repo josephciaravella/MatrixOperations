@@ -165,11 +165,12 @@ def solve(coeff_m, sln_m):
         
     return var_dict
 
-solve([[1,2],[2,1]], [[5],[4]])
+
 
 def lower_triangular(coeff_m):
-    if not square_check(coeff_m) or len(coeff_m) < 2:
+    if not square_check(coeff_m) or len(coeff_m) < 2 or not valid_check(coeff_m):
         raise ValueError('invalid matrix')
+    
 
     i = 0
     while i < len(coeff_m):
@@ -221,6 +222,11 @@ def determinant(coeff_m):
 
 
 def inverse(coeff_m):
+    if determinant(coeff_m) == 0: 
+        raise ValueError('this matrix is singular meaning it does not have an inverse')
+    elif not valid_check(coeff_m) or not square_check(coeff_m):
+        raise ValueError('invalid matrix')
+
     identity = []
     for row in range(len(coeff_m)):
         row_list = []
@@ -258,17 +264,22 @@ def column_replacement(coeff_m, col, index):
 
 
 def cramers(coeff_m, sln_m, target_var):
-    if not square_check(coeff_m):   
+    if not valid_check(coeff_m):
+        raise ValueError('invalid matrix')
+    elif not square_check(coeff_m):   
         raise ValueError('the coefficient matrix must be a square')
 
     mod_coeff_m = column_replacement(coeff_m, sln_m, target_var)
-
-    return determinant(mod_coeff_m)/determinant(coeff_m)
+    
+    if determinant(coeff_m) == 0:\
+        raise ZeroDivisionError('determinant of the coeff matrix is 0')
+    else:
+        return determinant(mod_coeff_m)/determinant(coeff_m)
 
 
 
 def multiplication(matrix1, matrix2):
-    if not rectangle_check(matrix1) or not rectangle_check(matrix2):
+    if not valid_check(matrix1) and not rectangle_check(matrix1) or not valid_check(matrix2) and not rectangle_check(matrix2):
         raise ValueError('one or both of these matrices is not a proper matrix')
     
     if len(matrix2) != len(matrix1[0]):
@@ -290,33 +301,42 @@ def multiplication(matrix1, matrix2):
 
 
 def transpose(matrix):
-    transpose = []
+    if not valid_check(matrix) or not rectangle_check(matrix):
+        raise ValueError('invalid matrix')
+    new_m = []
     for i in range(len(matrix)):
         temp_row = []
         for j in range(len(matrix[i])):
             temp_row.append(matrix[j][i])
-        transpose.append(temp_row)
+        new_m.append(temp_row)
     
-    return transpose
+    return new_m
 
 
 
 def trace(matrix):
-    trace = 0
-    for i in range(len(matrix)):
-        trace += matrix[i][i]
+    if not valid_check(matrix) or not square_check(matrix):
+        raise ValueError('invalid matrix')
     
-    return trace
+    total = 0
+    for i in range(len(matrix)):
+        total += matrix[i][i]
+    
+    return total
 
 
 
 def matrix_add_sub(matrix1, matrix2, operation):
-
+    if not valid_check(matrix1) and not rectangle_check(matrix1) or not valid_check(matrix2) and not rectangle_check(matrix2):
+        raise ValueError('one or both of these matrices is not a proper matrix')
+        
     if len(matrix1) != len(matrix2):
         raise ValueError('these matrices do not have the same number of rows')
 
     new_m = []
     for i in range(len(matrix1)):
+        if len(matrix1[i]) != len(matrix2[i]):
+            raise ValueError(f'invalid row at row{i+1}')
         if 'add' in operation.lower():
             new_m.append(row_add(matrix1[i], matrix2[i]))
         elif 'subtract' in operation.lower():
